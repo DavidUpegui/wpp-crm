@@ -1,5 +1,6 @@
 "use client";
 
+import { SearchIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -22,6 +23,9 @@ const USERS_QUERY_PARAMS = {
   role: "role",
   status: "status",
 } as const;
+
+/** Filter labels follow the 13px meta size of plan §7b. */
+const FILTER_LABEL_CLASS = "text-meta";
 
 const STATUS_FILTER_VALUES: UserListStatusFilter[] = ["active", "inactive", "must_change_password"];
 
@@ -88,18 +92,28 @@ export function UsersFilters({ filters }: UsersFiltersProps): React.JSX.Element 
   }
 
   return (
-    <div className="flex flex-wrap items-end gap-4" aria-busy={isPending}>
-      <form role="search" onSubmit={handleSearchSubmit} className="flex flex-col gap-2">
-        <Label htmlFor="users-search">Buscar por nombre o correo</Label>
+    <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-4" aria-busy={isPending}>
+      <form role="search" onSubmit={handleSearchSubmit} className="flex flex-col gap-2 md:w-80">
+        <Label htmlFor="users-search" className={FILTER_LABEL_CLASS}>
+          Buscar por nombre o correo
+        </Label>
         <div className="flex gap-2">
-          <Input
-            id="users-search"
-            type="search"
-            value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
-            placeholder="Nombre o correo"
-            className="w-64"
-          />
+          <div className="relative flex-1">
+            <SearchIcon
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              id="users-search"
+              type="search"
+              autoComplete="off"
+              spellCheck={false}
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              placeholder="Nombre o correo"
+              className="bg-card pl-8"
+            />
+          </div>
           <Button type="submit" variant="outline" disabled={isPending}>
             Buscar
           </Button>
@@ -142,9 +156,11 @@ type FilterSelectProps = {
 function FilterSelect({ id, label, items, values, value, onChange }: FilterSelectProps): React.JSX.Element {
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id} className={FILTER_LABEL_CLASS}>
+        {label}
+      </Label>
       <Select items={items} value={value} onValueChange={(nextValue) => onChange(nextValue ?? ALL_VALUE)}>
-        <SelectTrigger id={id} className="w-56">
+        <SelectTrigger id={id} className="w-full bg-card md:w-52">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

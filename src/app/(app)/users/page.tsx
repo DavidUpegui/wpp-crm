@@ -1,3 +1,4 @@
+import { TriangleAlertIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
@@ -12,7 +13,7 @@ import { CreateUserDialog } from "@/modules/users/ui/create-user-dialog";
 import { RETRY_LABEL, USERS_LOAD_ERROR_MESSAGE } from "@/modules/users/ui/messages";
 import type { UserManagementActions } from "@/modules/users/ui/user-dialogs-state";
 import { UsersFilters } from "@/modules/users/ui/users-filters";
-import { UsersTable } from "@/modules/users/ui/users-table";
+import { USERS_PANEL_CLASS, UsersTable } from "@/modules/users/ui/users-table";
 import { listUsers } from "@/server/container";
 import { requireSignedInAdminOrNull } from "@/server/require-signed-in-user";
 
@@ -63,7 +64,7 @@ export const metadata: Metadata = {
  */
 export default function UsersPage({ searchParams }: { searchParams: UsersSearchParams }): React.JSX.Element {
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full max-w-[1100px] flex-col gap-6">
       <Suspense fallback={<UsersPageSkeleton />}>
         <GuardedUsersList searchParams={searchParams} />
       </Suspense>
@@ -99,18 +100,26 @@ async function GuardedUsersList({ searchParams }: { searchParams: UsersSearchPar
 
   return (
     <>
-      <UsersHeader />
-      <UsersFilters filters={filters} />
-      <UsersTable users={users} currentUserId={admin.id} actions={USER_MANAGEMENT_ACTIONS} />
+      <UsersHeader userCount={users.length} />
+      <div className="flex flex-col gap-4">
+        <UsersFilters filters={filters} />
+        <UsersTable users={users} currentUserId={admin.id} actions={USER_MANAGEMENT_ACTIONS} />
+      </div>
     </>
   );
 }
 
-/** Title row with the "Crear usuario" button (US-7). */
-function UsersHeader(): React.JSX.Element {
+/**
+ * Title row with the "Crear usuario" button (US-7). The count line is left
+ * out when the list could not be loaded (`userCount` undefined).
+ */
+function UsersHeader({ userCount }: { userCount?: number }): React.JSX.Element {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4">
-      <h1 className="text-2xl font-semibold">Usuarios</h1>
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-page font-semibold tracking-tight text-title">Usuarios</h1>
+        {userCount !== undefined && <p className="text-meta text-muted-foreground">{formatUserCount(userCount)}</p>}
+      </div>
       <CreateUserDialog action={USER_MANAGEMENT_ACTIONS.createUser} />
     </div>
   );
@@ -120,14 +129,23 @@ function UsersLoadError({ retryPath }: { retryPath: string }): React.JSX.Element
   return (
     <>
       <UsersHeader />
-      <div role="alert" className="flex flex-col items-start gap-4 rounded-lg border p-6">
-        <p>{USERS_LOAD_ERROR_MESSAGE}</p>
-        <Link href={retryPath} className={buttonVariants({ variant: "outline" })}>
+      <div role="alert" className={`${USERS_PANEL_CLASS} flex flex-col items-center gap-3 px-6 py-14 text-center`}>
+        <TriangleAlertIcon aria-hidden="true" className="size-8 text-muted-foreground" />
+        <p className="text-muted-foreground">{USERS_LOAD_ERROR_MESSAGE}</p>
+        <Link href={retryPath} className={buttonVariants({ variant: "outline", size: "sm" })}>
           {RETRY_LABEL}
         </Link>
       </div>
     </>
   );
+}
+
+/** "1 usuario" / "4 usuarios" — the number of users the current filters show. */
+function formatUserCount(userCount: number): string {
+  if (userCount === 1) {
+    return "1 usuario";
+  }
+  return `${userCount} usuarios`;
 }
 
 /** Valid filters from the raw query; a repeated parameter (?role=a&role=b) counts as invalid. */
@@ -159,12 +177,20 @@ function buildUsersPath(filters: UserListFilters): string {
 function UsersPageSkeleton(): React.JSX.Element {
   return (
     <div className="flex flex-col gap-6" aria-hidden="true">
-      <Skeleton className="h-8 w-40" />
-      <Skeleton className="h-9 w-full max-w-2xl" />
-      <div className="flex flex-col gap-2">
-        {Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
-          <Skeleton key={index} className="h-10 w-full" />
-        ))}
+      <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <Skeleton className="h-8 w-32" />
+      </div>
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-14 w-full max-w-2xl" />
+        <div className={`${USERS_PANEL_CLASS} flex flex-col gap-3 p-4`}>
+          {Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
+            <Skeleton key={index} className="h-9 w-full" />
+          ))}
+        </div>
       </div>
     </div>
   );

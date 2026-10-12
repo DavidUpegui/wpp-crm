@@ -22,8 +22,9 @@ export const metadata: Metadata = {
  */
 export default function AccountPage(): React.JSX.Element {
   return (
-    <div className="flex w-full max-w-xl flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Mi cuenta</h1>
+    <div className="flex w-full max-w-[720px] flex-col gap-8">
+      {/* Page titles use Pine ink (plan §7b) through the title token. */}
+      <h1 className="text-page font-semibold tracking-tight text-title">Mi cuenta</h1>
 
       {/* With Cache Components, request data (headers) is read inside a
           <Suspense> boundary; the title above stays in the static shell. */}
@@ -44,40 +45,72 @@ async function GuardedAccountDetails(): Promise<React.JSX.Element> {
   const currentUser = await requireSignedInUser({ requestHeaders, returnTo: ACCOUNT_PATH });
 
   return (
-    <div className="flex flex-col gap-6">
-      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-        <dt className="text-muted-foreground">Correo electrónico</dt>
-        <dd>{currentUser.email}</dd>
-        <dt className="text-muted-foreground">Rol</dt>
-        <dd>{getRoleLabel(currentUser.role)}</dd>
+    <div className="flex flex-col gap-8">
+      <dl className="flex flex-col gap-4 sm:flex-row sm:gap-12">
+        <IdentityItem label="Correo electrónico" value={currentUser.email} />
+        <IdentityItem label="Rol" value={getRoleLabel(currentUser.role)} />
       </dl>
 
-      <AccountCard title="Nombre">
+      <AccountSection
+        titleId="account-name-title"
+        title="Nombre"
+        helper="Es el nombre que ven tus compañeros en el CRM."
+      >
         <AccountNameForm action={updateNameAction} currentName={currentUser.name} />
-      </AccountCard>
+      </AccountSection>
 
-      <AccountCard title="Contraseña">
+      <AccountSection
+        titleId="account-password-title"
+        title="Contraseña"
+        helper="Al cambiarla se cerrarán tus sesiones en otros dispositivos."
+      >
         <AccountPasswordForm action={changePasswordAction} />
-      </AccountCard>
+      </AccountSection>
     </div>
   );
 }
 
-function AccountCard({ title, children }: { title: string; children: React.ReactNode }): React.JSX.Element {
+/** One read-only fact about the account: muted label above its value. */
+function IdentityItem({ label, value }: { label: string; value: string }): React.JSX.Element {
   return (
-    <section className="flex flex-col gap-4 rounded-lg border bg-card p-4">
-      <h2 className="text-lg font-semibold">{title}</h2>
-      {children}
+    <div className="flex min-w-0 flex-col gap-1">
+      <dt className="text-meta text-muted-foreground">{label}</dt>
+      <dd className="text-body font-medium break-words">{value}</dd>
+    </div>
+  );
+}
+
+/** A Paper panel with a section title and a one-line explanation above its form. */
+function AccountSection({
+  titleId,
+  title,
+  helper,
+  children,
+}: {
+  titleId: string;
+  title: string;
+  helper: string;
+  children: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <section aria-labelledby={titleId} className="flex flex-col gap-5 rounded-xl border bg-card p-5 sm:p-6">
+      <header className="flex flex-col gap-1">
+        <h2 id={titleId} className="text-section font-semibold text-title">
+          {title}
+        </h2>
+        <p className="text-body text-muted-foreground">{helper}</p>
+      </header>
+      <div className="w-full max-w-[420px]">{children}</div>
     </section>
   );
 }
 
 function AccountSkeleton(): React.JSX.Element {
   return (
-    <div className="flex flex-col gap-6" aria-hidden="true">
+    <div className="flex flex-col gap-8" aria-hidden="true">
       <Skeleton className="h-12 w-64" />
-      <Skeleton className="h-36 w-full" />
-      <Skeleton className="h-64 w-full" />
+      <Skeleton className="h-44 w-full rounded-xl" />
+      <Skeleton className="h-80 w-full rounded-xl" />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { UserCheckIcon, UserXIcon } from "lucide-react";
+import { useActionState, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -16,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useFocusOnFormError } from "@/components/use-focus-on-form-error";
 import type { User } from "@/modules/users/domain/user";
 
 import { INITIAL_USER_DIALOG_STATE, type UserDialogAction, type UserDialogState } from "./user-dialogs-state";
@@ -56,20 +58,29 @@ function getDialogTexts(user: ToggleUserStatusDialogProps["user"]): {
 export function ToggleUserStatusDialog({ user, action }: ToggleUserStatusDialogProps): React.JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const texts = getDialogTexts(user);
-  const buttonVariant = user.status === "active" ? "destructive" : "outline";
+  const isDeactivation = user.status === "active";
+  // The row button stays quiet; the destructive style is kept for the confirm button.
+  const confirmVariant = isDeactivation ? "destructive" : "default";
+  const TriggerIcon = isDeactivation ? UserXIcon : UserCheckIcon;
 
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-      <AlertDialogTrigger render={<Button variant={buttonVariant} size="sm" />}>{texts.buttonLabel}</AlertDialogTrigger>
+      <AlertDialogTrigger render={<Button variant="ghost" size="sm" />}>
+        <TriggerIcon aria-hidden="true" data-icon="inline-start" />
+        {texts.buttonLabel}
+        {/* Every row has the same visible label; the name tells screen-reader users which row it acts on. */}
+        <span className="sr-only"> a {user.name}</span>
+      </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{texts.title}</AlertDialogTitle>
+          <AlertDialogTitle className="text-section font-semibold text-title">{texts.title}</AlertDialogTitle>
           <AlertDialogDescription>{texts.description}</AlertDialogDescription>
         </AlertDialogHeader>
         {/* The form unmounts when the dialog closes, so an old error is not shown again. */}
         <ToggleUserStatusForm
           userId={user.id}
           confirmLabel={texts.buttonLabel}
+          confirmVariant={confirmVariant}
           action={action}
           onSuccess={() => setIsOpen(false)}
         />
@@ -81,11 +92,19 @@ export function ToggleUserStatusDialog({ user, action }: ToggleUserStatusDialogP
 type ToggleUserStatusFormProps = {
   userId: string;
   confirmLabel: string;
+  /** "destructive" when deactivating, the primary style when reactivating. */
+  confirmVariant: "destructive" | "default";
   action: UserDialogAction;
   onSuccess: () => void;
 };
 
-function ToggleUserStatusForm({ userId, confirmLabel, action, onSuccess }: ToggleUserStatusFormProps): React.JSX.Element {
+function ToggleUserStatusForm({
+  userId,
+  confirmLabel,
+  confirmVariant,
+  action,
+  onSuccess,
+}: ToggleUserStatusFormProps): React.JSX.Element {
   const [state, formAction, isPending] = useActionState(
     async (previousState: UserDialogState, formData: FormData): Promise<UserDialogState> => {
       const nextState = await action(previousState, formData);
@@ -97,20 +116,22 @@ function ToggleUserStatusForm({ userId, confirmLabel, action, onSuccess }: Toggl
     },
     INITIAL_USER_DIALOG_STATE,
   );
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusOnFormError(formRef, state);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form ref={formRef} action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="userId" value={userId} />
 
       {state.status === "error" && state.message && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" tabIndex={-1}>
           <AlertDescription>{state.message}</AlertDescription>
         </Alert>
       )}
 
       <AlertDialogFooter>
         <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
-        <AlertDialogAction type="submit" disabled={isPending}>
+        <AlertDialogAction type="submit" variant={confirmVariant} disabled={isPending}>
           {isPending ? "Guardando…" : confirmLabel}
         </AlertDialogAction>
       </AlertDialogFooter>

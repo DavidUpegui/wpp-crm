@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useFocusOnFormError } from "@/components/use-focus-on-form-error";
 import { MIN_PASSWORD_LENGTH } from "@/modules/users/domain/password-policy";
 
 import type { AccountPasswordFormAction, AccountPasswordFormState } from "./account-form-state";
@@ -29,6 +30,7 @@ type AccountPasswordFormProps = {
 export function AccountPasswordForm({ action }: AccountPasswordFormProps): React.JSX.Element {
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE);
   const formRef = useRef<HTMLFormElement>(null);
+  useFocusOnFormError(formRef, state);
   const newPasswordDescriptionIds = state.fieldErrors?.newPassword
     ? "account-new-password-hint account-new-password-error"
     : "account-new-password-hint";
@@ -43,10 +45,10 @@ export function AccountPasswordForm({ action }: AccountPasswordFormProps): React
   }, [state]);
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-4" noValidate>
+    <form ref={formRef} action={formAction} className="flex flex-col gap-5" noValidate>
       <FormMessage state={state} />
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         <Label htmlFor="currentPassword">Contraseña actual</Label>
         <Input
           id="currentPassword"
@@ -60,7 +62,7 @@ export function AccountPasswordForm({ action }: AccountPasswordFormProps): React
         <FieldError id="current-password-error" message={state.fieldErrors?.currentPassword} />
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         <Label htmlFor="newPassword">Nueva contraseña</Label>
         <Input
           id="newPassword"
@@ -71,13 +73,13 @@ export function AccountPasswordForm({ action }: AccountPasswordFormProps): React
           aria-invalid={Boolean(state.fieldErrors?.newPassword)}
           aria-describedby={newPasswordDescriptionIds}
         />
-        <p id="account-new-password-hint" className="text-sm text-muted-foreground">
+        <p id="account-new-password-hint" className="text-meta text-muted-foreground">
           Mínimo {MIN_PASSWORD_LENGTH} caracteres.
         </p>
         <FieldError id="account-new-password-error" message={state.fieldErrors?.newPassword} />
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         <Label htmlFor="passwordConfirmation">Confirmar contraseña</Label>
         <Input
           id="passwordConfirmation"
@@ -93,27 +95,30 @@ export function AccountPasswordForm({ action }: AccountPasswordFormProps): React
         <FieldError id="account-password-confirmation-error" message={state.fieldErrors?.passwordConfirmation} />
       </div>
 
-      <Button type="submit" disabled={isPending} className="self-start">
+      <Button type="submit" disabled={isPending} className="mt-1 self-start">
         {isPending ? "Guardando…" : "Cambiar contraseña"}
       </Button>
     </form>
   );
 }
 
-/** Success or whole-form error message above the fields. */
+/**
+ * Success or whole-form error message above the fields. The success box has
+ * no live role: the toast already announces it, so screen readers hear it once.
+ */
 function FormMessage({ state }: { state: AccountPasswordFormState }): React.JSX.Element | null {
   if (!state.message) {
     return null;
   }
   if (state.status === "success") {
     return (
-      <Alert role="status">
+      <Alert role="none">
         <AlertDescription>{state.message}</AlertDescription>
       </Alert>
     );
   }
   return (
-    <Alert variant="destructive">
+    <Alert variant="destructive" tabIndex={-1}>
       <AlertDescription>{state.message}</AlertDescription>
     </Alert>
   );

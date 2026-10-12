@@ -15,6 +15,7 @@ Format: `- <description> — <origin: who/where found it> (YYYY-MM-DD)`
 
 ## Tech debt
 
+- UI nice-to-haves from the guidelines review: vendor `button.tsx` uses `transition-all`; add `themeColor` / `color-scheme: light` — spec 001 / T049 (2026-10-12)
 - Remove unused Next.js starter assets in `public/` (next.svg, vercel.svg, …) — found in spec 001 / T036 (2026-10-12)
 - `/api/health` imports the db client directly (AGENTS.md §5.1 says app code calls use cases) — route it through a tiny health-check use case — found in spec 001 / T027 (2026-10-12)
 - Bump `@types/node` from ^20 to ^22+ (vitest 5 peer requirement mismatch) — found in spec 001 / T001 (2026-10-12)

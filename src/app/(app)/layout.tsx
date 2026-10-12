@@ -62,14 +62,19 @@ function buildLoginPath(requestedPath: string | null): string {
   return `${LOGIN_PATH}?redirectTo=${encodeURIComponent(safeRedirectPath(requestedPath))}`;
 }
 
+/** Same frame as the real shell (sidebar / top bar + workspace) so nothing jumps when the session resolves. */
 function AppShellSkeleton(): React.JSX.Element {
   return (
-    <div className="flex flex-1 flex-col" aria-hidden="true">
-      <div className="flex items-center justify-between gap-4 border-b px-4 py-3">
-        <Skeleton className="h-6 w-64" />
-        <Skeleton className="h-8 w-48" />
+    <div className="flex flex-1 flex-col md:flex-row" aria-hidden="true">
+      <div className="flex flex-col gap-3 bg-sidebar px-4 py-3 md:fixed md:inset-y-0 md:left-0 md:w-60 md:gap-6 md:px-6 md:py-5">
+        <Skeleton className="h-6 w-24 bg-sidebar-accent" />
+        <div className="flex gap-2 md:flex-col md:gap-3">
+          <Skeleton className="h-7 w-24 bg-sidebar-accent md:w-36" />
+          <Skeleton className="h-7 w-24 bg-sidebar-accent md:w-32" />
+          <Skeleton className="h-7 w-24 bg-sidebar-accent md:w-32" />
+        </div>
       </div>
-      <div className="flex flex-col gap-3 px-4 py-6">
+      <div className="flex flex-col gap-3 px-4 py-6 sm:px-6 md:pl-70 md:pr-10 md:py-10">
         <Skeleton className="h-8 w-40" />
         <Skeleton className="h-5 w-64" />
       </div>

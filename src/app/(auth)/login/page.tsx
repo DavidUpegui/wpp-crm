@@ -17,10 +17,10 @@ export const metadata: Metadata = {
  */
 export default function LoginPage({ searchParams }: PageProps<"/login">): React.JSX.Element {
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">Iniciar sesión</h1>
-        <p className="text-sm text-muted-foreground">Ingresa con tu correo y contraseña.</p>
+    <div className="flex flex-col gap-8">
+      <header className="flex flex-col gap-1.5">
+        <h1 className="text-page font-semibold tracking-tight text-title">Iniciar sesión</h1>
+        <p className="text-body text-muted-foreground">Ingresa con tu correo y contraseña.</p>
       </header>
 
       {/* With Cache Components, request data (searchParams) is read inside a
@@ -45,7 +45,7 @@ function LoginFormSkeleton(): React.JSX.Element {
     <div className="flex flex-col gap-4" aria-hidden="true">
       <Skeleton className="h-14 w-full" />
       <Skeleton className="h-14 w-full" />
-      <Skeleton className="h-9 w-full" />
+      <Skeleton className="h-10 w-full" />
     </div>
   );
 }

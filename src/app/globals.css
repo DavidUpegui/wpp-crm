@@ -8,7 +8,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  /* No monospace typeface is loaded: fall back to the system stack. */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -39,50 +40,82 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  /* Title colour (plan §7b): text-title = Pine ink for page, section and dialog titles. */
+  --color-title: var(--title);
+  /* Type scale (plan §7b), one named size per role. Line heights keep the previous look. */
+  --text-meta: 0.8125rem; /* 13px — meta text, labels, table headers */
+  --text-meta--line-height: 1.5;
+  --text-body: 0.9375rem; /* 15px — body and UI text */
+  --text-body--line-height: 1.5;
+  --text-section: 1.125rem; /* 18px — section and dialog titles */
+  --text-section--line-height: calc(1.75 / 1.125);
+  --text-page: 1.5rem; /* 24px — page titles */
+  --text-page--line-height: calc(2 / 1.5);
+  --text-display: 2rem; /* 32px — login headline */
+  --text-display--line-height: 1.15;
+  /* Status badge tints (plan §7b): bg-status-active, text-status-active-foreground, … */
+  --color-status-active: var(--status-active);
+  --color-status-active-foreground: var(--status-active-foreground);
+  --color-status-pending: var(--status-pending);
+  --color-status-pending-foreground: var(--status-pending-foreground);
+  --color-status-inactive: var(--status-inactive);
+  --color-status-inactive-foreground: var(--status-inactive-foreground);
+  /* Radius by role (plan §7b): rounded-lg = 8px inputs/buttons, rounded-xl = 12px panels/dialogs. */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-xl: calc(var(--radius) * 1.5);
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Chat bubbles (login conversation panel, later the inbox): rounded-bubble = 16px. */
+  --radius-bubble: 1rem;
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Palette from plan §7b. Names in comments match the plan table. */
+  --background: #f5f7f6; /* Mineral — workspace background */
+  --foreground: #1c2b2f; /* Body ink — ink-tinted text, not pure black */
+  --title: #12343b; /* Pine ink — page and section titles */
+  --card: #ffffff; /* Paper — panels, table */
+  --card-foreground: #1c2b2f; /* Body ink */
+  --popover: #ffffff; /* Paper — dialogs, menus */
+  --popover-foreground: #1c2b2f; /* Body ink */
+  --primary: #0b7a6d; /* Lagoon — primary buttons, links */
+  --primary-foreground: #ffffff; /* Paper */
+  --secondary: #e8edeb; /* Mineral, darker — quiet secondary buttons */
+  --secondary-foreground: #12343b; /* Pine ink */
+  --muted: #eef2f1; /* Mineral, slightly darker — subtle surfaces */
+  --muted-foreground: #475569; /* Slate — muted text */
+  --accent: #ddf2eb; /* Mint wash — hovered/selected rows */
+  --accent-foreground: #12343b; /* Pine ink */
+  --destructive: #c2412d; /* Signal — errors, destructive actions */
+  --border: #dce3e1; /* Mineral, darker — hairlines */
+  --input: #cbd5d2; /* Mineral, darker still — input outlines */
+  --ring: #0b7a6d; /* Lagoon — focus ring */
+  --chart-1: #0b7a6d; /* Lagoon */
+  --chart-2: #12343b; /* Pine ink */
+  --chart-3: #b45309; /* Amber */
+  --chart-4: #475569; /* Slate */
+  --chart-5: #c2412d; /* Signal */
+  --radius: 0.5rem; /* 8px — inputs and buttons */
+  --sidebar: #12343b; /* Pine ink — sidebar background */
+  --sidebar-foreground: #e6efed; /* Light text on Pine ink */
+  --sidebar-primary: #ddf2eb; /* Mint wash — active nav item */
+  --sidebar-primary-foreground: #12343b; /* Pine ink */
+  --sidebar-accent: #1d4a52; /* Lighter Pine — nav hover */
+  --sidebar-accent-foreground: #ffffff; /* Paper */
+  --sidebar-border: rgb(255 255 255 / 12%); /* Subtle divider on Pine ink */
+  --sidebar-ring: #ddf2eb; /* Mint wash — Lagoon is too dark to see on Pine ink */
+  --status-active: #ddf2eb; /* Mint wash — "Activo" badge */
+  --status-active-foreground: #12343b; /* Pine ink */
+  --status-pending: #fef3c7; /* Amber tint — "Debe cambiar contraseña" badge */
+  --status-pending-foreground: #b45309; /* Amber */
+  --status-inactive: #e2e8f0; /* Slate tint — "Inactivo" badge */
+  --status-inactive-foreground: #475569; /* Slate */
 }
 
+/* Dark mode is out of scope (plan §7b); these are the untouched shadcn defaults. */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -126,5 +159,10 @@
   }
   html {
     @apply font-sans;
+  }
+  /* Tailwind v4 resets buttons to the default cursor; clickable controls should show a pointer. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
   }
 }

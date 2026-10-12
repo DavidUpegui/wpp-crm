@@ -2,7 +2,7 @@
 id: "001"
 title: "Authentication"
 spec: ./spec.md
-status: Done            # Draft | Approved | Done
+status: Approved        # Draft | Approved | Done
 created: 2026-10-12
 approved_at: 2026-10-12
 ---
@@ -194,6 +194,47 @@ Each returns `{ ok: true } | { ok: false, code, message, fieldErrors? }`.
 - It prompts for the password with hidden input (`node:readline`), never prints it, and calls `createFirstAdmin`.
 - It runs with `tsx --conditions=react-server` so `server-only` imports resolve, and `dotenv` loads `.env.local`.
 
+## 7b. Design (addendum 2026-10-12 — AGENTS.md §4.1, `frontend-design` skill)
+
+Chosen by the user: own product identity + left sidebar. This defines the app's visual system; later specs reuse it.
+
+**Subject:** a small support team answering customer WhatsApp conversations all day — an operational workspace: calm surfaces, high legibility, one memorable moment (login).
+
+**Palette** (mapped onto the shadcn/Tailwind tokens in `src/app/globals.css`):
+
+| Name | Hex | Use |
+|---|---|---|
+| Pine ink | `#12343B` | sidebar background, page titles |
+| Mineral | `#F5F7F6` | workspace background |
+| Paper | `#FFFFFF` | panels, table, dialogs, inputs |
+| Lagoon | `#0B7A6D` | primary buttons, links, focus ring |
+| Mint wash | `#DDF2EB` | active nav item, hovered/selected rows, "Activo" badge |
+| Signal | `#C2412D` | errors, destructive actions |
+| (support) Amber | `#B45309` on `#FEF3C7` | "Debe cambiar contraseña" badge |
+| (support) Slate | `#475569` on `#E2E8F0` | "Inactivo" badge, muted text |
+
+Body text `#1C2B2F` (ink-tinted, not pure black). Contrast ≥ 4.5:1 for text.
+
+**Typography:** Instrument Sans (via `next/font/google`), one family. Scale: 13px meta/labels · 15px body/UI · 18px section titles · 24px page titles (600, slight negative tracking) · 32px login headline. Weights 400/500/600 only. `tabular-nums` for dates and tables. Sentence case everywhere; no all-caps labels.
+
+**Layout:**
+```
+Login / change password (split)          App (sidebar)
++-----------------+-----------------+    +----------+----------------------------+
+| Pine-ink panel  |  Iniciar sesión |    | WPP CRM  | Usuarios         [Crear …] |
+|  "WPP CRM"      |  [correo     ]  |    |          | [buscar] [rol] [estado]    |
+|  ( bubble: client )               |    | Bandeja  | Nombre  Correo  Rol Estado |
+|        ( bubble: agent )          |    | Contactos| ...                         |
+|  one-line value statement         |    | Plantill.|                            |
+|                 |  [Iniciar ses.] |    | Usuarios |                            |
++-----------------+-----------------+    | -------- |                            |
+  (stacks on mobile: form first)          | Ana · role (no dots: two lines) | Salir |
+                                          +----------+----------------------------+
+```
+Left-aligned content; page max width ~1100px; sidebar 240px; on < 768px the sidebar becomes a top bar with the nav in a horizontal scroll row.
+
+**Principles:** spend boldness only on the login conversation panel; everything else quiet. Radius by role (inputs/buttons 8px, panels/dialogs 12px, chat bubbles 16px with a tail). No gradients, no decorative shadows (one subtle shadow only for dialogs/popovers). Motion only in response to actions (dialog open, toast). Quality floor: responsive to 360px, visible focus ring (Lagoon), reduced motion respected, accessible contrast, clear Spanish copy (active verbs, actions keep the same name in toasts).
+
 ## 8. Meta API Verification
 
 Not applicable. Spec 001 has no Meta integration.
@@ -285,3 +326,8 @@ New scripts:
 ## 13. Approval
 
 - [x] Approved by the user on 2026-10-12
+
+## Changelog
+
+- 2026-10-12 — Addendum: §7b Design (visual system) and Phase 7 polish tasks, requested by the user after AGENTS.md §4.1 was introduced. Direction approved by the user (own identity, left sidebar).
+- 2026-10-12 — Lagoon darkened `#0E8F80` → `#0B7A6D`: the original failed the plan's own 4.5:1 text-contrast rule (3.99:1 white on Lagoon), found in T044.

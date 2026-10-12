@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { PlusIcon } from "lucide-react";
+import { useActionState, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { FieldError } from "@/components/field-error";
@@ -8,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -18,11 +20,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useFocusOnFormError } from "@/components/use-focus-on-form-error";
 import { MIN_PASSWORD_LENGTH } from "@/modules/users/domain/password-policy";
 import { USER_ROLES, type UserRole } from "@/modules/users/domain/user";
 
 import { getRoleLabel } from "./role-labels";
 import { INITIAL_USER_DIALOG_STATE, type UserDialogAction, type UserDialogState } from "./user-dialogs-state";
+
+/** Dialog field labels follow the 13px meta size of plan §7b; shared with the other user dialogs. */
+export const FIELD_LABEL_CLASS = "text-meta";
 
 const ROLE_ITEMS: Record<string, string> = Object.fromEntries(USER_ROLES.map((role) => [role, getRoleLabel(role)]));
 
@@ -44,10 +50,13 @@ export function CreateUserDialog({ action }: CreateUserDialogProps): React.JSX.E
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger render={<Button />}>Crear usuario</DialogTrigger>
-      <DialogContent>
+      <DialogTrigger render={<Button />}>
+        <PlusIcon aria-hidden="true" data-icon="inline-start" />
+        Crear usuario
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Crear usuario</DialogTitle>
+          <DialogTitle className="text-section font-semibold text-title">Crear usuario</DialogTitle>
           <DialogDescription>
             El usuario deberá cambiar la contraseña temporal la primera vez que inicie sesión.
           </DialogDescription>
@@ -72,18 +81,20 @@ function CreateUserForm({ action, onSuccess }: { action: UserDialogAction; onSuc
     },
     INITIAL_USER_DIALOG_STATE,
   );
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusOnFormError(formRef, state);
   const fieldErrors = state.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="flex flex-col gap-4" noValidate>
+    <form ref={formRef} action={formAction} className="flex flex-col gap-4" noValidate>
       {state.status === "error" && state.message && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" tabIndex={-1}>
           <AlertDescription>{state.message}</AlertDescription>
         </Alert>
       )}
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor={`${fieldId}-name`}>Nombre</Label>
+        <Label htmlFor={`${fieldId}-name`} className={FIELD_LABEL_CLASS}>Nombre</Label>
         <Input
           id={`${fieldId}-name`}
           name="name"
@@ -97,12 +108,13 @@ function CreateUserForm({ action, onSuccess }: { action: UserDialogAction; onSuc
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor={`${fieldId}-email`}>Correo electrónico</Label>
+        <Label htmlFor={`${fieldId}-email`} className={FIELD_LABEL_CLASS}>Correo electrónico</Label>
         <Input
           id={`${fieldId}-email`}
           name="email"
           type="email"
           autoComplete="off"
+          spellCheck={false}
           required
           aria-invalid={Boolean(fieldErrors.email)}
           aria-describedby={fieldErrors.email ? `${fieldId}-email-error` : undefined}
@@ -115,6 +127,7 @@ function CreateUserForm({ action, onSuccess }: { action: UserDialogAction; onSuc
       <TemporaryPasswordField id={`${fieldId}-password`} errorMessage={fieldErrors.temporaryPassword} />
 
       <DialogFooter>
+        <DialogClose render={<Button type="button" variant="outline" disabled={isPending} />}>Cancelar</DialogClose>
         <Button type="submit" disabled={isPending}>
           {isPending ? "Guardando…" : "Crear"}
         </Button>
@@ -151,7 +164,7 @@ export function RoleSelect({
 
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>Rol</Label>
+      <Label htmlFor={id} className={FIELD_LABEL_CLASS}>Rol</Label>
       <Select items={ROLE_ITEMS} name={name} defaultValue={defaultRole ?? null} disabled={disabled}>
         <SelectTrigger
           id={id}
@@ -170,7 +183,7 @@ export function RoleSelect({
         </SelectContent>
       </Select>
       {helpText && (
-        <p id={`${id}-help`} className="text-sm text-muted-foreground">
+        <p id={`${id}-help`} className="text-meta text-muted-foreground">
           {helpText}
         </p>
       )}
@@ -188,7 +201,7 @@ export function TemporaryPasswordField({ id, errorMessage }: { id: string; error
 
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={id}>Contraseña temporal</Label>
+      <Label htmlFor={id} className={FIELD_LABEL_CLASS}>Contraseña temporal</Label>
       <Input
         id={id}
         name="temporaryPassword"
@@ -198,7 +211,7 @@ export function TemporaryPasswordField({ id, errorMessage }: { id: string; error
         aria-invalid={Boolean(errorMessage)}
         aria-describedby={describedBy}
       />
-      <p id={`${id}-help`} className="text-sm text-muted-foreground">
+      <p id={`${id}-help`} className="text-meta text-muted-foreground">
         Mínimo {MIN_PASSWORD_LENGTH} caracteres.
       </p>
       <FieldError id={`${id}-error`} message={errorMessage} />

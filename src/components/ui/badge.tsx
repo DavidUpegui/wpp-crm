@@ -18,6 +18,10 @@ const badgeVariants = cva(
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+        /* User status tints (plan §7b): Activo / Debe cambiar contraseña / Inactivo. */
+        statusActive: "bg-status-active text-status-active-foreground",
+        statusPending: "bg-status-pending text-status-pending-foreground",
+        statusInactive: "bg-status-inactive text-status-inactive-foreground",
       },
     },
     defaultVariants: {

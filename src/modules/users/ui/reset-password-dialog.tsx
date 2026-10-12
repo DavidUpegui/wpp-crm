@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { KeyRoundIcon } from "lucide-react";
+import { useActionState, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -14,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useFocusOnFormError } from "@/components/use-focus-on-form-error";
 import type { User } from "@/modules/users/domain/user";
 
 import { TemporaryPasswordField } from "./create-user-dialog";
@@ -36,10 +39,15 @@ export function ResetPasswordDialog({ user, action }: ResetPasswordDialogProps):
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>Restablecer contraseña</DialogTrigger>
-      <DialogContent>
+      <DialogTrigger render={<Button variant="ghost" size="sm" />}>
+        <KeyRoundIcon aria-hidden="true" data-icon="inline-start" />
+        Restablecer contraseña
+        {/* Every row has the same visible label; the name tells screen-reader users which row it acts on. */}
+        <span className="sr-only"> de {user.name}</span>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Restablecer contraseña de {user.name}</DialogTitle>
+          <DialogTitle className="text-section font-semibold text-title">Restablecer contraseña de {user.name}</DialogTitle>
           <DialogDescription>
             Se cerrarán todas sus sesiones y deberá cambiar esta contraseña temporal la próxima vez que inicie
             sesión.
@@ -67,13 +75,15 @@ function ResetPasswordForm({ user, action, onSuccess }: ResetPasswordFormProps):
     },
     INITIAL_USER_DIALOG_STATE,
   );
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusOnFormError(formRef, state);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4" noValidate>
+    <form ref={formRef} action={formAction} className="flex flex-col gap-4" noValidate>
       <input type="hidden" name="userId" value={user.id} />
 
       {state.status === "error" && state.message && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" tabIndex={-1}>
           <AlertDescription>{state.message}</AlertDescription>
         </Alert>
       )}
@@ -81,6 +91,7 @@ function ResetPasswordForm({ user, action, onSuccess }: ResetPasswordFormProps):
       <TemporaryPasswordField id={`${fieldId}-password`} errorMessage={state.fieldErrors?.temporaryPassword} />
 
       <DialogFooter>
+        <DialogClose render={<Button type="button" variant="outline" disabled={isPending} />}>Cancelar</DialogClose>
         <Button type="submit" disabled={isPending}>
           {isPending ? "Guardando…" : "Restablecer contraseña"}
         </Button>

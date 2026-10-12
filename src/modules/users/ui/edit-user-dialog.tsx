@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { PencilIcon } from "lucide-react";
+import { useActionState, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { FieldError } from "@/components/field-error";
@@ -8,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -17,9 +19,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useFocusOnFormError } from "@/components/use-focus-on-form-error";
 import type { User } from "@/modules/users/domain/user";
 
-import { RoleSelect } from "./create-user-dialog";
+import { FIELD_LABEL_CLASS, RoleSelect } from "./create-user-dialog";
 import { INITIAL_USER_DIALOG_STATE, type UserDialogAction, type UserDialogState } from "./user-dialogs-state";
 
 /** Why the admin's own role select is disabled (AC-8.3, BR-009). */
@@ -47,10 +50,15 @@ export function EditUserDialog({ user, isCurrentUser, action }: EditUserDialogPr
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>Editar</DialogTrigger>
-      <DialogContent>
+      <DialogTrigger render={<Button variant="ghost" size="sm" />}>
+        <PencilIcon aria-hidden="true" data-icon="inline-start" />
+        Editar
+        {/* Every row has the same visible label; the name tells screen-reader users which row it acts on. */}
+        <span className="sr-only"> a {user.name}</span>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Editar usuario</DialogTitle>
+          <DialogTitle className="text-section font-semibold text-title">Editar usuario</DialogTitle>
           <DialogDescription>Cambia el nombre o el rol de {user.name}.</DialogDescription>
         </DialogHeader>
         {/* The form unmounts when the dialog closes, so it reopens with the saved values. */}
@@ -75,26 +83,28 @@ function EditUserForm({ user, isCurrentUser, action, onSuccess }: EditUserFormPr
     },
     INITIAL_USER_DIALOG_STATE,
   );
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusOnFormError(formRef, state);
   const fieldErrors = state.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="flex flex-col gap-4" noValidate>
+    <form ref={formRef} action={formAction} className="flex flex-col gap-4" noValidate>
       <input type="hidden" name="userId" value={user.id} />
 
       {state.status === "error" && state.message && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" tabIndex={-1}>
           <AlertDescription>{state.message}</AlertDescription>
         </Alert>
       )}
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor={`${fieldId}-email`}>Correo electrónico</Label>
+        <Label htmlFor={`${fieldId}-email`} className={FIELD_LABEL_CLASS}>Correo electrónico</Label>
         {/* No `name`: the email is never sent, it cannot change (BR-010). */}
         <Input id={`${fieldId}-email`} type="email" value={user.email} readOnly disabled />
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor={`${fieldId}-name`}>Nombre</Label>
+        <Label htmlFor={`${fieldId}-name`} className={FIELD_LABEL_CLASS}>Nombre</Label>
         <Input
           id={`${fieldId}-name`}
           name="name"
@@ -125,6 +135,7 @@ function EditUserForm({ user, isCurrentUser, action, onSuccess }: EditUserFormPr
       )}
 
       <DialogFooter>
+        <DialogClose render={<Button type="button" variant="outline" disabled={isPending} />}>Cancelar</DialogClose>
         <Button type="submit" disabled={isPending}>
           {isPending ? "Guardando…" : "Guardar cambios"}
         </Button>

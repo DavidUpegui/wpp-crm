@@ -23,10 +23,10 @@ export const metadata: Metadata = {
  */
 export default function ChangePasswordPage(): React.JSX.Element {
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">Cambia tu contraseña</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className="flex flex-col gap-8">
+      <header className="flex flex-col gap-1.5">
+        <h1 className="text-page font-semibold tracking-tight text-title">Cambia tu contraseña</h1>
+        <p className="text-body text-muted-foreground">
           Tu contraseña es temporal. Elige una nueva contraseña antes de continuar.
         </p>
       </header>
@@ -60,7 +60,7 @@ function ChangePasswordFormSkeleton(): React.JSX.Element {
     <div className="flex flex-col gap-4" aria-hidden="true">
       <Skeleton className="h-20 w-full" />
       <Skeleton className="h-14 w-full" />
-      <Skeleton className="h-9 w-full" />
+      <Skeleton className="h-10 w-full" />
     </div>
   );
 }

@@ -3,7 +3,7 @@ id: "001"
 title: "Authentication"
 spec: ./spec.md
 plan: ./plan.md
-status: Done            # Draft | Approved | In Progress | Done
+status: In Progress     # Draft | Approved | In Progress | Done
 created: 2026-10-12
 approved_at: 2026-10-12
 ---
@@ -369,6 +369,75 @@ approved_at: 2026-10-12
   - **Covers:** spec §13 (steps 1–9), FR-008 via curl
   - **Done when:** the user confirms every step of spec §13 on a fresh database, plus: curl login as agent → `GET /api/users` returns 403
   > Note: Marked done by the user on 2026-10-12. Visual polish was not part of this spec (the UI design-skill rule, AGENTS.md §4.1, was added afterwards) — recorded in TODO.md.
+
+## Phase 7 — UI polish (addendum 2026-10-12, AGENTS.md §4.1)
+
+All UI tasks follow plan §7b Design and the `frontend-design` skill. Behavior must not change.
+
+- [x] **T044** — Visual system: theme tokens and typeface
+  - **Layer:** ui
+  - **Files:** `src/app/globals.css`, `src/app/layout.tsx`
+  - **Depends on:** —
+  - **Covers:** plan §7b
+  - **Done when:** shadcn tokens (light theme) map to the §7b palette, radius tokens follow the role rules, Instrument Sans is loaded via `next/font` and used as `--font-sans`; typecheck + lint pass
+  > Note: Status badge tokens added (`bg-status-active|pending|inactive` + foregrounds), `rounded-bubble` token, Geist removed. Lagoon darkened to `#0B7A6D` for 4.5:1 contrast (plan changelog). Dark theme untouched (out of scope).
+
+- [x] **T045** [P] — Auth screens (login, change password)
+  - **Layer:** ui
+  - **Files:** `src/app/(auth)/layout.tsx`, `src/app/(auth)/login/page.tsx`, `src/app/(auth)/change-password/page.tsx`, `src/modules/auth/ui/login-form.tsx`, `src/modules/auth/ui/change-password-form.tsx`, new `src/components/auth-conversation-panel.tsx`
+  - **Depends on:** T044
+  - **Covers:** spec §10 (Login, Change password), plan §7b
+  - **Done when:** split layout with the pine-ink conversation panel (stacks on mobile, form first); forms restyled; texts/behavior unchanged; build passes
+  > Note: New `components/auth-conversation-panel.tsx` (bubbles `aria-hidden`, wordmark + sentence readable; collapses to a wordmark strip on mobile). Titles use `text-sidebar` for Pine ink → unify in the token consolidation. Build checked at phase end.
+
+- [x] **T046** [P] — App shell (sidebar) and placeholders
+  - **Layer:** ui
+  - **Files:** `src/components/app-shell/{app-shell,nav-links,user-menu}.tsx`, `src/app/(app)/layout.tsx` (skeleton only), `src/app/(app)/{inbox,contacts,templates}/page.tsx`, `src/components/forbidden-view.tsx`
+  - **Depends on:** T044
+  - **Covers:** FR-019, AC-3.2, plan §7b
+  - **Done when:** 240px pine-ink sidebar (app name, nav with mint active state, user name/role + "Cerrar sesión" at the bottom); top bar on < 768px; placeholders and forbidden view restyled; "Usuarios" still admin-only; build passes
+  > Note: Sidebar actions use token classes (shadcn Button variants assume light backgrounds). Name/role hidden in the mobile top bar below 640px. Placeholder sentences added. Titles use `text-foreground` → unify in the token consolidation; repeated empty-state markup → shared `EmptyState` in the consolidation.
+
+- [x] **T047** [P] — "Mi cuenta"
+  - **Layer:** ui
+  - **Files:** `src/app/(app)/account/page.tsx`, `src/modules/auth/ui/account-name-form.tsx`, `src/modules/auth/ui/account-password-form.tsx`
+  - **Depends on:** T044
+  - **Covers:** US-5 (visual), plan §7b
+  - **Done when:** page restyled per §7b (title, read-only email/role, two form sections); behavior unchanged; build passes
+  > Note: Two helper sentences added. Uses arbitrary 13/15/18px sizes and `text-secondary-foreground` for Pine ink titles → consolidated into named tokens after T045–T048.
+
+- [x] **T048** [P] — Usuarios (header, filters, table, badges, dialogs)
+  - **Layer:** ui
+  - **Files:** `src/app/(app)/users/page.tsx`, `src/modules/users/ui/{users-table,users-filters,create-user-dialog,edit-user-dialog,reset-password-dialog,toggle-user-status-dialog}.tsx`, `src/components/ui/badge.tsx` (variants only, if needed)
+  - **Depends on:** T044
+  - **Covers:** US-6–US-10 (visual), plan §7b
+  - **Done when:** page restyled per §7b; status badges use the three tints; dates tabular; row actions compact and keyboard-accessible; behavior unchanged; build passes
+  > Note: Badge variants `statusActive|statusPending|statusInactive`; dialogs got a "Cancelar" button (closes only); confirm button destructive only for deactivation; exports `USERS_PANEL_CLASS`, `FIELD_LABEL_CLASS`.
+
+- [x] **T048b** — Consolidate the visual system (tokens + shared empty state)
+  - **Layer:** ui
+  - **Files:** `src/app/globals.css`, new `src/components/empty-state.tsx`, `src/components/ui/dialog.tsx` (sr-only label only), and the T045–T048 files that use arbitrary sizes / title colors
+  - **Depends on:** T045, T046, T047, T048
+  - **Covers:** plan §7b
+  - **Done when:** one `text-title` token (Pine ink) and named size tokens (`text-meta` 13 · `text-body` 15 · `text-section` 18 · `text-page` 24 · `text-display` 32) replace arbitrary `text-[NNpx]` values and the mixed title classes; placeholders/forbidden view use `EmptyState`; dialog close label reads "Cerrar"; grep finds no `text-[1`/`text-[2`/`text-[3` px values in src (outside components/ui); typecheck + lint pass
+  > Note: `src/lib/utils.ts` `cn` configured (via `createCn`) so `text-meta|body|section|page|display` merge as font sizes, not colors — approved scope addition. Dialog titles also use `text-title`; visible DialogFooter "Close" → "Cerrar". Users-table empty/error states keep their own pattern.
+
+- [x] **T049** — Web interface guidelines review
+  - **Depends on:** T045–T048
+  - **Done when:** `web-design-guidelines` skill run on the changed UI files; real issues fixed; the rest in TODO.md
+  > Note: Findings: identical row-action names, iOS input zoom, `<aside>` landmark, missing skip link, focus lost after failed submits, plus small items (spellCheck, sidebar overflow, double success announcement). All fixed in T049b; only vendor `transition-all` and theme-color left (cosmetic).
+
+- [x] **T049b** — Fix: web interface guidelines findings
+  - **Layer:** ui
+  - **Files:** `src/modules/users/ui/{users-table,edit-user-dialog,reset-password-dialog,toggle-user-status-dialog,create-user-dialog,users-filters}.tsx`, `src/modules/auth/ui/{login-form,change-password-form,account-name-form,account-password-form}.tsx`, `src/components/app-shell/app-shell.tsx`, new `src/components/use-focus-on-form-error.ts`
+  - **Depends on:** T049
+  - **Done when:** row action buttons include the user's name for screen readers; auth inputs 16px on mobile; shell uses `<header>` + skip link to `#main`; a shared hook moves focus to the first invalid field or the alert after a failed submit (all 7 forms); spellCheck off on email/search inputs; sidebar scrolls on short viewports; single success announcement; typecheck + lint pass
+  > Note: New `components/use-focus-on-form-error.ts` used by all 7 forms + the deactivate dialog; form Alerts focusable (`tabIndex={-1}`); inline password-success Alert uses `role="none"` (toast announces).
+
+- [x] **T050** — Visual check (with the user)
+  - **Depends on:** T049
+  - **Done when:** full checks pass once (typecheck, lint, unit, build) and the user confirms the new look in the browser
+  > Note: User feedback: buttons showed the arrow cursor (Tailwind v4 default). Fixed with one base rule in `globals.css` (enabled `button` / `[role=button]` → pointer) and `cursor-pointer` on dropdown/select items.
 
 ## Coverage check
 
