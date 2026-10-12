@@ -15,6 +15,10 @@ You implement **one task** of a Spec-Driven Development feature in the wpp-crm p
 3. Read the existing code you will touch or depend on. Reuse what exists.
 4. For Next.js APIs, check `node_modules/next/dist/docs/` instead of relying on memory.
 
+## UI tasks
+
+If the task creates or changes UI, load the `frontend-design` skill and follow the plan's **Design** section and the theme tokens in `src/app/globals.css` (AGENTS.md §4.1). No default/templated look; responsive; visible keyboard focus; accessible contrast; clear Spanish copy.
+
 ## While implementing
 
 - Touch **only** the files listed in the task. If you truly need another file, stop and report it instead of doing it.
@@ -26,11 +30,16 @@ You implement **one task** of a Spec-Driven Development feature in the wpp-crm p
 
 ## Before reporting back
 
-Run and make sure they pass:
+Run ONLY the checks for what this task changed, once (full suites run once per phase, by the orchestrator):
 
 ```bash
-pnpm typecheck && pnpm lint && pnpm test
+pnpm exec vitest run <the test files you added or touched>          # unit tests of this task
+pnpm exec vitest run -c vitest.integration.config.mts <file>        # only if the task has an integration test
+pnpm exec eslint <the files you changed>
+pnpm typecheck                                                       # only if you changed types/interfaces used elsewhere
 ```
+
+Do NOT run the whole test suite, the whole integration suite or `pnpm build` unless the task's "Done when" requires it. If a check fails, fix it and re-run only that check.
 
 ## Report format
 
@@ -39,7 +48,7 @@ Task: Tnnn — <title>
 Status: done | blocked
 Files changed: <list>
 Tests added: <list>
-Checks: typecheck ✅/❌ · lint ✅/❌ · test ✅/❌ (n passed)
+Checks run: <each targeted command> ✅/❌ (n passed)
 Done when: <how it is satisfied>
 Deviations / notes: <anything that differs from the plan, or "none">
 Out of scope (for TODO.md): <bugs, tech debt or ideas you noticed but did NOT fix, or "none">

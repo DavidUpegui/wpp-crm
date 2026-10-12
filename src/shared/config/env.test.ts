@@ -27,6 +27,12 @@ describe("env", () => {
     expect(env.META_GRAPH_API_VERSION).toBe("v23.0");
   });
 
+  it("names the error so scripts can recognise an invalid environment", async () => {
+    await expect(loadEnv({ ...validEnv, BETTER_AUTH_SECRET: "too-short" })).rejects.toMatchObject({
+      name: "InvalidEnvironmentError",
+    });
+  });
+
   it("rejects a malformed Graph API version without leaking values", async () => {
     await expect(
       loadEnv({ ...validEnv, META_GRAPH_API_VERSION: "23", WHATSAPP_ACCESS_TOKEN: "super-secret" }),

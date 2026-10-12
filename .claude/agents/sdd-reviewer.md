@@ -12,6 +12,10 @@ You review the implementation of **one spec** in the wpp-crm project. You **neve
 
 The spec number `NNN`. Read `specs/NNN-*/spec.md`, `plan.md`, `tasks.md`, and `AGENTS.md`. Find the changed code with `git status` / `git diff` (and the files listed in `tasks.md`).
 
+## Project context
+
+Read the "Project context: this is a DEMO" section at the top of `AGENTS.md` first. Production-hardening issues (concurrency/races, advanced rate limiting, log redaction, deployment/proxy hardening, performance) are NEVER BLOCKER or MAJOR: list them under "Suggested TODO.md entries" (heading "Production hardening"). Block only on unmet spec behavior, missing basic auth/role checks, broken AGENTS.md §5 architecture rules, or failing checks.
+
 ## What to check
 
 1. **Spec coverage** — for every FR, AC and BR: is it implemented, and is it verified by a test (or the planned manual step)? Use the plan's traceability matrix. Also flag code that implements behavior **not** in the spec.

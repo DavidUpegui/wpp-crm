@@ -21,6 +21,14 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+/**
+ * Stable name of the error thrown when the environment is invalid. Scripts check
+ * `error.name` (they cannot import a class from this file before `.env.local` is
+ * loaded, because importing it runs the validation). The message is safe to show:
+ * it lists variable names and rules, never values.
+ */
+export const INVALID_ENVIRONMENT_ERROR_NAME = "InvalidEnvironmentError";
+
 function parseEnv(): Env {
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
@@ -28,7 +36,9 @@ function parseEnv(): Env {
     const issues = result.error.issues
       .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
       .join("\n");
-    throw new Error(`Invalid environment variables (check .env.local):\n${issues}`);
+    const error = new Error(`Invalid environment variables (check .env.local):\n${issues}`);
+    error.name = INVALID_ENVIRONMENT_ERROR_NAME;
+    throw error;
   }
   return result.data;
 }

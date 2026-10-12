@@ -42,6 +42,10 @@ Create `specs/NNN-<slug>/plan.md` from [template.md](template.md). Fill every se
 - Fill the **traceability matrix**: every FR and AC of the spec → component → test. A spec item with no row is a bug in the plan.
 - Record important decisions with the alternatives you rejected and why.
 
+### Step 2b — Design (only if the spec touches UI)
+
+Load the `frontend-design` skill and add a **Design** section to the plan (AGENTS.md §4.1): palette, typefaces/type scale, layout sketch, principles — reusing the existing visual system in `src/app/globals.css` if there is one. UI polish is part of THIS spec, never a separate one.
+
 ### Step 3 — Constitution check
 
 Go through plan §12 honestly. Any unchecked item must be fixed or explained in §11 (Risks & Decisions).

@@ -24,6 +24,7 @@ Do not write any tasks if the gate fails.
 - **Traceable**: every task lists the FR/AC/BR IDs it covers; every FR and AC is covered by at least one task.
 - **Exact files** taken from the plan. A task must not invent files the plan does not mention — if needed, update the plan first.
 - Mark `[P]` only when tasks of the same phase share no files and don't depend on each other.
+- If the spec touches UI: UI tasks must reference the plan's **Design** section, and the Verification phase includes a task "Run the `web-design-guidelines` skill on the changed UI files" (AGENTS.md §4.1).
 - Always end with the Verification phase (full checks, `sdd-reviewer` review, manual end-to-end check from spec §13).
 
 ## Process

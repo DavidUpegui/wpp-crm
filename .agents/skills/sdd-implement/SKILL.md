@@ -21,16 +21,18 @@ Input: `$ARGUMENTS` — the spec number `NNN`, optionally followed by a task ID 
 2. Build the execution order: unchecked tasks whose `depends_on` are all checked.
 3. **For each task, one at a time:**
    1. Delegate it to the **`sdd-implementer`** agent. Give it: the full task text, the paths to `spec.md`, `plan.md`, `tasks.md`, and any notes from previous tasks it needs.
-   2. When the agent returns, verify yourself: the files it changed match the task's **Files**, and the **Done when** check really passes (run the command).
+   2. When the agent returns, verify yourself: the files it changed match the task's **Files**, and its report shows the **Done when** check passing. Read the key code. Do **not** re-run checks the agent already ran successfully; re-run only if the report is unclear or something looks wrong.
    3. If it passes: tick `- [x]` for the task in `tasks.md`; add `> Note: …` under it for any deviation the agent reported.
    4. If it fails: send the agent back once with the failure details. If it fails again, stop and ask the user.
    5. Give the user a one-line progress update (`T004 ✅ — <title>`).
+   6. **Test budget:** per task, only the tests of the files that task changed (the agent runs them once). At the **end of each phase** of `tasks.md`, run the full checks once: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm test:integration` (if the phase touched infrastructure) and `pnpm build` (if the phase touched app/UI code). On failure, fix and re-run only what failed.
 4. **Stop and ask the user** whenever:
    - a task reveals that the spec or plan is wrong or incomplete → the documents are updated (and re-approved) **before** any more code is written;
    - a task needs something only the user can do (Meta dashboard, secrets in `.env.local`, manual test with the phone);
    - the agent wants to touch files outside the task's scope.
 5. When all implementation tasks are done:
    - Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`.
+   - If the spec touched UI: run the `web-design-guidelines` skill on the changed UI files (AGENTS.md §4.1); fix real issues via `Fix:` tasks, the rest goes to `TODO.md`.
    - Delegate to the **`sdd-reviewer`** agent with the spec number. Show its findings to the user.
    - Fix blocking findings through new tasks (`T0nn — Fix: …`) added to `tasks.md` and run them the same way.
    - Walk the user through the manual end-to-end check from spec §13.

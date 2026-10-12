@@ -14,6 +14,17 @@ Guide for any coding agent (and human) working in this repo. Read this fully bef
 
 **Quality bar:** code must follow clean architecture and **SOLID**, and must be easy to read **for a junior developer**. When in doubt, choose the simpler, more explicit option. See §5 and §6.
 
+## Project context: this is a DEMO (read first)
+
+This CRM is an **internal demo / test**. It is **not used by clients** and is **not exposed to the public internet**. The goal is to build features **fast** while keeping the code clean and readable (§5–§6).
+
+What this means for every spec, plan, task and review:
+- **Keep the basics:** login and role checks on every page/action/route, no secrets in code or git, passwords hashed, Zod validation at the boundaries, the WhatsApp rules in §8 (they are Meta's rules, not hardening).
+- **Do NOT spend effort on production hardening** unless the user explicitly asks: concurrency/race-condition handling and tests, advanced rate limiting, log redaction, CSRF/proxy/deployment hardening, load/performance work, exhaustive edge-case coverage. Prefer the simplest design that works for a demo.
+- **Reviews:** production-hardening findings are never BLOCKER/MAJOR — they go to `TODO.md` under a "Production hardening" heading. Block only on: spec behavior not met, basic auth/role check missing, broken architecture rules (§5), or failing checks.
+- **Tests:** cover business rules and the happy path + main error cases; skip concurrency and stress tests.
+- Spec 001 (authentication) was built before this rule and already includes some hardening; keep it, but don't extend it.
+
 ## 0. Spec-Driven Development (mandatory)
 
 **No feature code is written without an approved spec, plan and task list.** This applies to every feature and every bug fix (a bug fix gets a short spec).
@@ -69,8 +80,16 @@ pnpm db:studio                # Drizzle Studio
 pnpm dev                      # Next.js dev server on :3000 (health: /api/health)
 pnpm typecheck                # next typegen && tsc --noEmit
 pnpm lint
-pnpm test                     # vitest run
+pnpm test                     # unit tests only (vitest run; *.test.ts, no database)
+pnpm test:integration         # *.integration.test.ts against Postgres test DB (wpp_crm_test, auto-created + migrated)
 pnpm build
+pnpm auth:create-first-admin --name "Ana Pérez" --email ana@example.com   # one-off: first admin (asks password, hidden)
+```
+
+Regenerate the Better Auth tables after changing auth options that affect the schema (then `pnpm db:generate`):
+
+```bash
+pnpm dlx auth@1.7.6 generate --config src/modules/auth/infrastructure/better-auth-schema.config.ts --output src/shared/db/schema/auth.ts -y
 ```
 
 Local webhook tunnel (Meta requires public HTTPS):
@@ -87,6 +106,14 @@ cloudflared tunnel --url http://localhost:3000
 - Only consider reputable skills (official sources such as `vercel-labs`, `anthropics`, `microsoft`, or high install counts). **Read a skill's `SKILL.md` before installing or using it**, and ask the user before installing.
 - Install per project (no `-g`) so the whole team gets the same skills.
 - Skills give guidance; **this file wins** when they conflict.
+
+### 4.1 UI work always uses the design skills (mandatory)
+
+Every spec that creates or changes UI (pages, components, forms, dialogs, the app shell) must include **visual polish in the same spec**; there are no separate "UI polish" specs.
+- **Plan (`/sdd-plan`):** use the `frontend-design` skill to write a "Design" section in `plan.md`: palette (4–6 named hex values), typefaces and type scale, layout sketch, principles. The first UI spec defines the app's visual system (Tailwind/shadcn theme tokens in `globals.css`); later specs reuse and extend it instead of reinventing it.
+- **Implementation (`sdd-implementer`):** UI tasks follow that Design section and the `frontend-design` skill (no default/templated look, responsive, visible keyboard focus, accessible contrast, clear Spanish copy).
+- **Review:** before a UI spec is Done, run the `web-design-guidelines` skill on the changed UI files; fix real issues, put the rest in `TODO.md`.
+- Other installed UI-related skills: `better-auth-*` (auth only). Use `find-skills` if a UI need isn't covered.
 
 ## 5. Architecture
 
@@ -113,33 +140,41 @@ app (Next.js routes/pages)  ──►  application (use cases)  ──►  domai
 ```
 src/
   app/                               # Next.js routes ONLY (thin)
-    (auth)/login/
-    (app)/inbox/[conversationId]/
-    (app)/contacts/
-    (app)/templates/
+    (auth)/login/, (auth)/change-password/   # public auth screens
+    (app)/layout.tsx                 # app shell + optimistic guard (NOT enough on its own — see §12)
+    (app)/inbox|contacts|templates/  # placeholders until their specs
+    (app)/account/, (app)/users/     # "Mi cuenta", user management (page + actions.ts)
+    api/session, api/account, api/users/   # REST API (spec 001)
     api/health/route.ts
     api/webhooks/whatsapp/route.ts   # GET verify + POST receive
     api/realtime/route.ts            # SSE stream
   modules/
-    <feature>/                       # conversations, messaging, contacts, templates, webhooks, auth
+    <feature>/                       # auth, users (spec 001); later: conversations, messaging, contacts, templates, webhooks
       domain/
-      application/
+      application/                   # use cases: `makeX(dependencies)` factories, one per file
+        testing/                     # in-memory fakes + their contract tests (test-only)
       infrastructure/
-      ui/
+      ui/                            # components + `*-state.ts` form state types + Spanish `messages.ts`
   shared/
     config/env.ts                    # zod-validated env — the ONLY place that reads process.env
     db/client.ts                     # drizzle client (server-only)
     db/schema/*.ts                   # one file per domain area, re-exported from index.ts
     errors/app-error.ts              # base class for all intentional errors
+    http/                            # error→status table, body/query validation, same-origin check, client IP, safe redirects
     whatsapp/graph-client.ts         # low-level HTTP to the Graph API (auth, version, retries, error mapping)
     realtime/                        # NOTIFY helper + LISTEN subscriber
   server/
     container.ts                     # composition root: wires interfaces → implementations
+    require-signed-in-user.ts        # page/action guard: session + pending password change + role
+  proxy.ts                           # optimistic cookie check → /login?redirectTo=… (never the only protection)
   components/ui/                     # shadcn/ui generated components (do not hand-edit heavily)
+  components/                        # shared app components (app-shell/, field-error, forbidden-view)
   lib/utils.ts                       # shadcn `cn()` helper (path required by components.json)
 tests/
   fixtures/webhooks/                 # real webhook payloads captured from Meta
+  integration/                       # global setup (creates/migrates the test DB) + test-database helper
   stubs/
+scripts/                             # one-off CLI scripts (run with `tsx --conditions=react-server`)
 drizzle/                             # generated migrations (committed)
 specs/                               # SDD documents: NNN-slug/{spec,plan,tasks}.md (see §0)
 .agents/skills/                      # project skills (find-skills, sdd-*), symlinked into .claude/skills/
@@ -160,7 +195,7 @@ Example of the shape every use case follows:
 // modules/messaging/application/send-text-message.ts
 
 /** Sends a free-form text message, only allowed inside the 24h customer service window. */
-export function createSendTextMessage(dependencies: {
+export function makeSendTextMessage(dependencies: {
   conversationRepository: ConversationRepository;
   messageSender: MessageSender;
 }) {
@@ -175,6 +210,10 @@ export function createSendTextMessage(dependencies: {
   };
 }
 ```
+
+**Naming:** use-case factories are `makeX` (e.g. `makeCreateUser` → `createUser`). Writes that span several rows go through a `…TransactionRunner` dependency that hands the use case the repositories bound to one transaction.
+
+**UI pattern:** the page passes Server Actions to client components as props; form state types live in `src/modules/<module>/ui/*-state.ts`. Components never import from `src/app/`.
 
 **Avoid over-engineering (YAGNI):** create an interface only when there is a real second implementation or a test fake that needs it. Do not add layers, factories or generics "for the future".
 
@@ -198,6 +237,7 @@ Defined and validated in `src/shared/config/env.ts`; documented in `.env.example
 | Var | Purpose |
 |---|---|
 | `DATABASE_URL` | Postgres connection string |
+| `DATABASE_URL_TEST` | Integration-test database (default `…/wpp_crm_test`); only read by the Vitest integration config |
 | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | Auth |
 | `META_APP_ID` | Meta app |
 | `META_APP_SECRET` | Verifies webhook `X-Hub-Signature-256` |
@@ -207,7 +247,7 @@ Defined and validated in `src/shared/config/env.ts`; documented in `.env.example
 | `WHATSAPP_BUSINESS_ACCOUNT_ID` | WABA ID (templates API) |
 | `WHATSAPP_WEBHOOK_VERIFY_TOKEN` | Random string, must match Meta dashboard |
 
-Never read `process.env` directly outside `env.ts` (exception: `drizzle.config.ts`, which runs outside Next.js).
+Never read `process.env` directly outside `env.ts` (exceptions: `drizzle.config.ts` and the Vitest configs, which run outside Next.js). An invalid environment throws an error named `InvalidEnvironmentError` that lists variable names (never values).
 
 ## 8. WhatsApp Cloud API rules (critical)
 
@@ -237,7 +277,9 @@ Webhook fields subscribed in Meta: `messages`, `message_template_status_update`.
 - Only `infrastructure/` code touches the DB client. Repositories return **domain types**, not raw Drizzle rows.
 - Use transactions for multi-row writes (e.g. upsert contact + conversation + message).
 - Core tables: `users`/`sessions` (Better Auth), `contacts`, `tags`, `contact_tags`, `notes`, `conversations`, `messages`, `templates`, `media`, `webhook_events`.
-- Timestamps are `timestamptz`; store UTC.
+- Timestamps are `timestamptz`; store UTC. **Exception (accepted in spec 001):** the Better Auth tables (`user`, `session`, `account`, `verification`) are generator-owned and use `timestamp` without time zone; Drizzle reads/writes them consistently as UTC. Do not hand-edit `src/shared/db/schema/auth.ts` — regenerate it (§3).
+- Better Auth is used as a **library only**: its HTTP handler is NOT mounted (no `/api/auth/*`) so its endpoints can't bypass our rules. Options live in `src/modules/auth/infrastructure/create-better-auth.ts`; the session cookie cache stays OFF so revocation is immediate.
+- Repositories receive the database (or a transaction) in their constructor; they never import `@/shared/db/client`.
 
 ## 10. Realtime
 
@@ -261,6 +303,9 @@ Webhook fields subscribed in Meta: `messages`, `message_template_status_update`.
 - Never log tokens, full webhook bodies with message content, or full phone numbers in production logs (redact to last 4 digits).
 - Never commit `.env*` files except `.env.example`.
 - All app routes and server actions require an authenticated session; `admin`-only for template creation/deletion and user management. The webhook route is the only unauthenticated POST endpoint (protected by signature).
+- **Every page and every Server Action that touches real data calls `requireSignedInUser` (or `requireCurrentUser` in route handlers) ITSELF.** The `(app)` layout guard and `proxy.ts` are not enough: App Router pages render independently of layouts, and layouts don't re-run on client navigation.
+- Mutating REST routes call `assertSameOrigin` (cross-site browser requests are rejected; clients without `Origin`, like curl, are allowed).
+- **If this is ever deployed publicly** (not planned — see Project context): the failed-login limit (BR-004) uses the client IP from `X-Forwarded-For`/`X-Real-IP`. Production MUST run behind a reverse proxy that overwrites these headers; otherwise clients can forge them and bypass the limit.
 
 ## 13. Testing
 
@@ -270,13 +315,15 @@ Test each layer the way it is meant to be used:
 |---|---|---|
 | `domain/` | Pure unit tests, no mocks needed | `is-within-customer-service-window.test.ts` |
 | `application/` | Use case + **in-memory fakes** of its interfaces | `send-text-message.test.ts` with `FakeMessageSender` |
-| `infrastructure/` | Integration tests against Docker Postgres (later) / mocked `fetch` for Meta | `drizzle-conversation-repository.test.ts` |
+| `infrastructure/` | `*.integration.test.ts` against the Docker Postgres test DB (`pnpm test:integration`) / mocked `fetch` for Meta | `drizzle-user-repository.integration.test.ts` |
 
 Required tests:
 - Webhook signature verification (valid, invalid, missing header).
 - Webhook payload parsing for text, media, status and template-status events (fixtures in `tests/fixtures/webhooks/`).
 - Status monotonicity and idempotent message insert.
 - 24h-window guard.
+
+Test budget during SDD implementation: per task, run only the tests/lint of the files that task changed; run the full suites (typecheck, lint, unit, integration, build) once at the end of each phase.
 
 Rules: test files sit next to the code (`*.test.ts`); test names describe behavior (`"rejects text messages outside the 24h window"`); **never call the real Meta API in tests**.
 

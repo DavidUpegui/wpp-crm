@@ -17,9 +17,17 @@ export abstract class AppError extends Error {
   /** Stable, machine-readable identifier (useful for the UI and for tests). */
   public readonly code: string;
 
-  protected constructor(code: string, message: string) {
+  /**
+   * Optional extra fields that are safe to send to the client, so the UI can
+   * show a precise message (e.g. `{ reason: "too_short" }` for the password
+   * policy). Never put personal data or secrets here.
+   */
+  public readonly details?: Record<string, string>;
+
+  protected constructor(code: string, message: string, details?: Record<string, string>) {
     super(message);
     this.name = new.target.name;
     this.code = code;
+    this.details = details;
   }
 }

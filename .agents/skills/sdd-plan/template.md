@@ -60,6 +60,13 @@ approved_at:
 |---|---|---|---|---|
 | | | `src/app/…` | | |
 
+## 7b. Design (required if the spec touches UI — AGENTS.md §4.1, `frontend-design` skill)
+
+- **Palette:** 4–6 named hex values (or the existing theme tokens being reused)
+- **Typography:** typefaces, roles, type scale
+- **Layout:** sketch of the main screens
+- **Principles:** what makes this UI specific to the product; quality floor (responsive, focus, contrast)
+
 ## 8. Meta API Verification
 
 <!-- Every Graph API call or webhook field used, verified against the official docs at planning time. -->

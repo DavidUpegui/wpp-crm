@@ -2,6 +2,7 @@ import "server-only";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { env } from "@/shared/config/env";
+import type { Database } from "./database";
 import * as schema from "./schema";
 
 // Reuse the pool across hot reloads in dev to avoid exhausting connections.
@@ -11,4 +12,4 @@ export const pool = globalForDb.pgPool ?? new Pool({ connectionString: env.DATAB
 
 if (env.NODE_ENV !== "production") globalForDb.pgPool = pool;
 
-export const db = drizzle(pool, { schema });
+export const db: Database = drizzle(pool, { schema });
