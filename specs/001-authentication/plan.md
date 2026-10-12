@@ -2,7 +2,7 @@
 id: "001"
 title: "Authentication"
 spec: ./spec.md
-status: Approved        # Draft | Approved | Done
+status: Done            # Draft | Approved | Done
 created: 2026-10-12
 approved_at: 2026-10-12
 ---

@@ -15,6 +15,9 @@ Format: `- <description> — <origin: who/where found it> (YYYY-MM-DD)`
 
 ## Tech debt
 
+- Respect `prefers-reduced-motion` for dialog animations (plan §7b) — spec 001 review (2026-10-12)
+- Apply the 15px `text-body` token on `<body>`; replace remaining `text-sm` in `user-menu.tsx` — spec 001 review (2026-10-12)
+- Move shared users UI style constants (`FIELD_LABEL_CLASS`, `USERS_PANEL_CLASS`) out of feature files or inline them; drop duplicate 1100px wrapper in users page — spec 001 review (2026-10-12)
 - UI nice-to-haves from the guidelines review: vendor `button.tsx` uses `transition-all`; add `themeColor` / `color-scheme: light` — spec 001 / T049 (2026-10-12)
 - Remove unused Next.js starter assets in `public/` (next.svg, vercel.svg, …) — found in spec 001 / T036 (2026-10-12)
 - `/api/health` imports the db client directly (AGENTS.md §5.1 says app code calls use cases) — route it through a tiny health-check use case — found in spec 001 / T027 (2026-10-12)

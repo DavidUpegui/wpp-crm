@@ -3,7 +3,7 @@ id: "001"
 title: "Authentication"
 spec: ./spec.md
 plan: ./plan.md
-status: In Progress     # Draft | Approved | In Progress | Done
+status: Done            # Draft | Approved | In Progress | Done
 created: 2026-10-12
 approved_at: 2026-10-12
 ---
@@ -412,7 +412,7 @@ All UI tasks follow plan §7b Design and the `frontend-design` skill. Behavior m
   - **Depends on:** T044
   - **Covers:** US-6–US-10 (visual), plan §7b
   - **Done when:** page restyled per §7b; status badges use the three tints; dates tabular; row actions compact and keyboard-accessible; behavior unchanged; build passes
-  > Note: Badge variants `statusActive|statusPending|statusInactive`; dialogs got a "Cancelar" button (closes only); confirm button destructive only for deactivation; exports `USERS_PANEL_CLASS`, `FIELD_LABEL_CLASS`.
+  > Note: Badge variants `statusActive|statusPending|statusInactive`; dialogs got a "Cancelar" button (closes only); confirm button destructive only for deactivation; exports `USERS_PANEL_CLASS`, `FIELD_LABEL_CLASS`. Added an "N usuarios" count line under the page title.
 
 - [x] **T048b** — Consolidate the visual system (tokens + shared empty state)
   - **Layer:** ui
