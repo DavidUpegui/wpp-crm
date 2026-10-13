@@ -97,7 +97,10 @@ Local webhook tunnel (Meta requires public HTTPS):
 ```bash
 cloudflared tunnel --url http://localhost:3000
 # Callback URL in Meta dashboard: https://<tunnel-host>/api/webhooks/whatsapp
+# (quick tunnels get a NEW host on every start: update the Callback URL each time)
 ```
+
+One-time setup: Meta only delivers webhooks after the WABA is linked to the app — `POST /{WHATSAPP_BUSINESS_ACCOUNT_ID}/subscribed_apps` with the access token (once per WABA). Without it the webhook verifies but no messages arrive.
 
 ## 4. Agent skills
 
@@ -142,14 +145,16 @@ src/
   app/                               # Next.js routes ONLY (thin)
     (auth)/login/, (auth)/change-password/   # public auth screens
     (app)/layout.tsx                 # app shell + optimistic guard (NOT enough on its own — see §12)
-    (app)/inbox|contacts|templates/  # placeholders until their specs
+    (app)/inbox/                     # inbox (spec 002): layout.tsx renders the screen, [[...conversationId]]/page.tsx guards, actions.ts
+    (app)/contacts|templates/        # placeholders until their specs
     (app)/account/, (app)/users/     # "Mi cuenta", user management (page + actions.ts)
     api/session, api/account, api/users/   # REST API (spec 001)
+    api/conversations/               # inbox reads: list, one conversation, its messages (spec 002)
     api/health/route.ts
     api/webhooks/whatsapp/route.ts   # GET verify + POST receive
     api/realtime/route.ts            # SSE stream
   modules/
-    <feature>/                       # auth, users (spec 001); later: conversations, messaging, contacts, templates, webhooks
+    <feature>/                       # auth, users (spec 001); conversations, webhooks (spec 002); later: contacts, templates
       domain/
       application/                   # use cases: `makeX(dependencies)` factories, one per file
         testing/                     # in-memory fakes + their contract tests (test-only)
@@ -323,7 +328,10 @@ Required tests:
 - Status monotonicity and idempotent message insert.
 - 24h-window guard.
 
-Test budget during SDD implementation: per task, run only the tests/lint of the files that task changed; run the full suites (typecheck, lint, unit, integration, build) once at the end of each phase.
+Test budget during SDD implementation (keep it fast):
+- **Per task:** only `pnpm exec vitest run <changed test files>`, `pnpm exec eslint <changed files>` and, if types changed, `pnpm exec tsc --noEmit` (incremental; run `pnpm typecheck` only when routes/pages were added, since it also runs `next typegen`). Never the whole suite, never `pnpm build`.
+- **Full suites (typecheck, lint, unit, integration, build) only at 2 checkpoints per spec:** (1) when the backend is finished (last non-UI phase), (2) once at the end, before the review. Not after every phase.
+- The end-of-spec run is the only final run: the reviewer uses its result instead of re-running.
 
 Rules: test files sit next to the code (`*.test.ts`); test names describe behavior (`"rejects text messages outside the 24h window"`); **never call the real Meta API in tests**.
 

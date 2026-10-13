@@ -60,6 +60,11 @@
   --color-status-pending-foreground: var(--status-pending-foreground);
   --color-status-inactive: var(--status-inactive);
   --color-status-inactive-foreground: var(--status-inactive-foreground);
+  /* Inbox (plan 002 §7b): bg-bubble-team, bg-bubble-customer, bg-window-closing (meter in the last 2 h), text-read-receipt. */
+  --color-bubble-team: var(--bubble-team);
+  --color-bubble-customer: var(--bubble-customer);
+  --color-window-closing: var(--window-closing);
+  --color-read-receipt: var(--read-receipt);
   /* Radius by role (plan §7b): rounded-lg = 8px inputs/buttons, rounded-xl = 12px panels/dialogs. */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -113,6 +118,10 @@
   --status-pending-foreground: #b45309; /* Amber */
   --status-inactive: #e2e8f0; /* Slate tint — "Inactivo" badge */
   --status-inactive-foreground: #475569; /* Slate */
+  --bubble-team: #ddf2eb; /* Mint wash — team bubbles */
+  --bubble-customer: #ffffff; /* Paper — customer bubbles */
+  --window-closing: #b45309; /* Amber — window meter in the last 2 h */
+  --read-receipt: #1b64c4; /* Receipt blue — "Leído" ticks, like WhatsApp; 5.3:1 on Mineral (under the bubble) */
 }
 
 /* Dark mode is out of scope (plan §7b); these are the untouched shadcn defaults. */

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { Suspense } from "react";
 
+import { PageContainer } from "@/components/page-container";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AccountNameForm } from "@/modules/auth/ui/account-name-form";
 import { AccountPasswordForm } from "@/modules/auth/ui/account-password-form";
@@ -22,16 +23,18 @@ export const metadata: Metadata = {
  */
 export default function AccountPage(): React.JSX.Element {
   return (
-    <div className="flex w-full max-w-[720px] flex-col gap-8">
-      {/* Page titles use Pine ink (plan §7b) through the title token. */}
-      <h1 className="text-page font-semibold tracking-tight text-title">Mi cuenta</h1>
+    <PageContainer>
+      <div className="flex w-full max-w-[720px] flex-col gap-8">
+        {/* Page titles use Pine ink (plan §7b) through the title token. */}
+        <h1 className="text-page font-semibold tracking-tight text-title">Mi cuenta</h1>
 
-      {/* With Cache Components, request data (headers) is read inside a
-          <Suspense> boundary; the title above stays in the static shell. */}
-      <Suspense fallback={<AccountSkeleton />}>
-        <GuardedAccountDetails />
-      </Suspense>
-    </div>
+        {/* With Cache Components, request data (headers) is read inside a
+            <Suspense> boundary; the title above stays in the static shell. */}
+        <Suspense fallback={<AccountSkeleton />}>
+          <GuardedAccountDetails />
+        </Suspense>
+      </div>
+    </PageContainer>
   );
 }
 

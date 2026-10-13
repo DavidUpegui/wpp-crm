@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { z } from "zod";
 
 import { ForbiddenView } from "@/components/forbidden-view";
+import { PageContainer } from "@/components/page-container";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { USER_ROLES, USER_STATUSES, type User, type UserListFilters } from "@/modules/users/domain/user";
@@ -64,11 +65,13 @@ export const metadata: Metadata = {
  */
 export default function UsersPage({ searchParams }: { searchParams: UsersSearchParams }): React.JSX.Element {
   return (
-    <div className="flex w-full max-w-[1100px] flex-col gap-6">
-      <Suspense fallback={<UsersPageSkeleton />}>
-        <GuardedUsersList searchParams={searchParams} />
-      </Suspense>
-    </div>
+    <PageContainer>
+      <div className="flex w-full flex-col gap-6">
+        <Suspense fallback={<UsersPageSkeleton />}>
+          <GuardedUsersList searchParams={searchParams} />
+        </Suspense>
+      </div>
+    </PageContainer>
   );
 }
 

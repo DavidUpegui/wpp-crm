@@ -1,11 +1,19 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import * as authErrors from "@/modules/auth/domain/errors";
+import * as conversationsErrors from "@/modules/conversations/domain/errors";
 import * as usersErrors from "@/modules/users/domain/errors";
 import { AppError } from "@/shared/errors/app-error";
 
 import { ERROR_STATUS_BY_CODE, toErrorResponse } from "./json-error-response";
 import { RequestValidationError } from "./request-validation-error";
+
+/**
+ * Error classes that never reach an HTTP response, so they need no status row.
+ * `MessageSendFailedError` is caught inside `sendTextReply`, which stores the
+ * reply as failed instead of throwing.
+ */
+const ERRORS_NEVER_SENT_OVER_HTTP: unknown[] = [conversationsErrors.MessageSendFailedError];
 
 /** One instance of every known AppError class, so a new class without a status row fails a test. */
 function buildEveryKnownError(): AppError[] {
@@ -25,6 +33,10 @@ function buildEveryKnownError(): AppError[] {
     new authErrors.UnauthenticatedError(),
     new authErrors.PasswordChangeRequiredError(),
     new authErrors.WrongCurrentPasswordError(),
+    new conversationsErrors.ConversationNotFoundError(),
+    new conversationsErrors.OutsideCustomerServiceWindowError(),
+    new conversationsErrors.EmptyReplyTextError(),
+    new conversationsErrors.ReplyTextTooLongError(4096),
     new RequestValidationError({ email: ["Invalid email"] }),
   ];
 }
@@ -40,8 +52,12 @@ afterEach(() => vi.restoreAllMocks());
 describe("ERROR_STATUS_BY_CODE", () => {
   it("lists every error class exported by the domain error modules", () => {
     // Arrange
-    const exportedClasses = [...Object.values(usersErrors), ...Object.values(authErrors)].filter(
-      (value) => typeof value === "function",
+    const exportedClasses = [
+      ...Object.values(usersErrors),
+      ...Object.values(authErrors),
+      ...Object.values(conversationsErrors),
+    ].filter(
+      (value) => typeof value === "function" && !ERRORS_NEVER_SENT_OVER_HTTP.includes(value),
     );
     const builtClasses = new Set(buildEveryKnownError().map((error) => error.constructor));
 
@@ -72,6 +88,9 @@ describe("toErrorResponse", () => {
     [new authErrors.PasswordChangeRequiredError(), 403],
     [new usersErrors.UserNotFoundError(), 404],
     [new usersErrors.LastActiveAdminError(), 409],
+    [new conversationsErrors.ConversationNotFoundError(), 404],
+    [new conversationsErrors.OutsideCustomerServiceWindowError(), 409],
+    [new conversationsErrors.EmptyReplyTextError(), 422],
     [new authErrors.WrongCurrentPasswordError(), 422],
     [new authErrors.TooManyLoginAttemptsError(), 429],
   ])("answers %s with status %i and its code and message", async (error, expectedStatus) => {

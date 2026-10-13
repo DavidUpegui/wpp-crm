@@ -15,6 +15,13 @@
       "when": 1791827322627,
       "tag": "0001_auth_constraints",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791856161637,
+      "tag": "0002_inbox_text_messaging",
+      "breakpoints": true
     }
   ]
 }

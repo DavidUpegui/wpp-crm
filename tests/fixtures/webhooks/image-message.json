@@ -1,0 +1,44 @@
+{
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "100000000000001",
+      "changes": [
+        {
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "15550000000",
+              "phone_number_id": "100000000000002"
+            },
+            "contacts": [
+              {
+                "profile": {
+                  "name": "José Pérez"
+                },
+                "wa_id": "573001234567",
+                "user_id": "CO.1234567890123456"
+              }
+            ],
+            "messages": [
+              {
+                "from": "573001234567",
+                "from_user_id": "CO.1234567890123456",
+                "id": "wamid.FAKE_INBOUND_IMAGE",
+                "timestamp": "1791856247",
+                "type": "image",
+                "image": {
+                  "mime_type": "image/jpeg",
+                  "sha256": "FAKE_SHA256_BASE64_VALUE_FOR_TEST_ONLY_00000=",
+                  "id": "100000000000003",
+                  "url": "https://lookaside.fbsbx.com/whatsapp_business/attachments/?mid=FAKE&ext=1&hash=FAKE"
+                }
+              }
+            ]
+          },
+          "field": "messages"
+        }
+      ]
+    }
+  ]
+}

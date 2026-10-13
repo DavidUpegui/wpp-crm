@@ -30,6 +30,9 @@ type AppShellProps = {
  * short desktop viewports the sidebar scrolls so the user menu stays
  * reachable.
  *
+ * `<main>` sets no width or padding: each page chooses its own (most use
+ * `PageContainer`; the inbox uses the full area).
+ *
  * The sidebar children are in reading order for desktop (name → nav → user);
  * on small screens `order-*` moves the user menu next to the app name.
  */
@@ -55,9 +58,7 @@ export function AppShell({
       </header>
       {/* tabIndex -1 lets the skip link move focus here, not only scroll. */}
       <main id={MAIN_CONTENT_ID} tabIndex={-1} className="flex flex-1 flex-col outline-none md:pl-60">
-        <div className="flex w-full max-w-[1100px] flex-1 flex-col px-4 py-6 sm:px-6 md:px-10 md:py-10">
-          {children}
-        </div>
+        {children}
       </main>
       <Toaster />
     </div>
