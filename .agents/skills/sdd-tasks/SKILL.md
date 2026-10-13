@@ -21,6 +21,7 @@ Do not write any tasks if the gate fails.
 - **Ordered by dependencies** following the layers: setup → domain → application → infrastructure → routes/UI → verification.
 - **Test-first** for domain and application: the task that creates a rule or use case also creates its test, and "Done when" names that test.
 - **Objective "Done when"**: a command that passes or a behavior a person can observe. Never "works correctly".
+- **Cheap "Done when"** (AGENTS.md §13 test budget): name the task's own test files, `eslint` on its files or `tsc --noEmit` — never `pnpm build`, the whole suite or `pnpm test:integration` without a file. Full suites appear only in the 2 checkpoint tasks: one after the last backend (non-UI) phase and one in Verification.
 - **Traceable**: every task lists the FR/AC/BR IDs it covers; every FR and AC is covered by at least one task.
 - **Exact files** taken from the plan. A task must not invent files the plan does not mention — if needed, update the plan first.
 - Mark `[P]` only when tasks of the same phase share no files and don't depend on each other.

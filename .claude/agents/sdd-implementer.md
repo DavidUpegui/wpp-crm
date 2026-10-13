@@ -30,16 +30,17 @@ If the task creates or changes UI, load the `frontend-design` skill and follow t
 
 ## Before reporting back
 
-Run ONLY the checks for what this task changed, once (full suites run once per phase, by the orchestrator):
+Run ONLY the checks for what this task (or batch of tasks) changed, once. Full suites run only at the 2 checkpoints of AGENTS.md §13, by the orchestrator:
 
 ```bash
 pnpm exec vitest run <the test files you added or touched>          # unit tests of this task
 pnpm exec vitest run -c vitest.integration.config.mts <file>        # only if the task has an integration test
 pnpm exec eslint <the files you changed>
-pnpm typecheck                                                       # only if you changed types/interfaces used elsewhere
+pnpm exec tsc --noEmit                                               # only if you changed types/interfaces (incremental, fast)
+pnpm typecheck                                                       # instead of tsc, ONLY if you added/renamed routes or pages (runs next typegen)
 ```
 
-Do NOT run the whole test suite, the whole integration suite or `pnpm build` unless the task's "Done when" requires it. If a check fails, fix it and re-run only that check.
+Do NOT run the whole test suite, the whole integration suite or `pnpm build`, even if an old "Done when" line mentions them — a task's "typecheck passes" means the `tsc --noEmit` above. If a check fails, fix it and re-run only that check.
 
 ## Report format
 

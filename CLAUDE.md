@@ -8,7 +8,7 @@
 - **`TODO.md`**: when you notice a bug, task or idea outside the current spec, add one line there instead of fixing it now. Delete lines when solved — it is not a history. When the user asks "what is pending?", read `TODO.md` and every `specs/*/` document whose status is not `Done` (including unchecked tasks), and answer with a short grouped list.
 - Use the `find-skills` skill (`.claude/skills/find-skills`) when starting a new area of work; review any skill before installing it and ask the user first.
 - Before implementing any WhatsApp feature, check the official Meta docs (the API changes often).
-- Run `pnpm typecheck && pnpm lint && pnpm test` before declaring a task done.
+- Per task: run only the tests and lint of the files you changed (plus `pnpm exec tsc --noEmit` if types changed). Full suites (`pnpm typecheck && pnpm lint && pnpm test`, plus integration/build) run only at the checkpoints of AGENTS.md §13.
 - Never print, read aloud, or commit `.env.local` or any token. Use `.env.example` for reference.
 - Do not run `docker compose down -v` or drop the database without asking — it deletes local data.
 - Work one roadmap phase (= one spec) at a time; verify against the WhatsApp test number before moving on.
